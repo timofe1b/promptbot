@@ -1,5 +1,6 @@
 import os
 
+import psycopg
 import telebot
 from dotenv import load_dotenv
 from telebot import types
@@ -10,6 +11,24 @@ load_dotenv()
 
 bot = telebot.TeleBot(os.environ["TELEGRAM_TOKEN"])
 
+def check_database():
+    database_url = os.environ.get("DATABASE_URL")
+
+    if not database_url:
+        print("ОШИБКА: переменная DATABASE_URL не найдена.")
+        return
+
+    try:
+        with psycopg.connect(database_url, connect_timeout=10) as conn:
+            with conn.cursor() as cur:
+                cur.execute("SELECT current_database(), current_user")
+                db_name, db_user = cur.fetchone()
+
+        print(f"БАЗА ДАННЫХ ПОДКЛЮЧЕНА: {db_name}, пользователь: {db_user}")
+
+    except Exception as e:
+        print(f"ОШИБКА ПОДКЛЮЧЕНИЯ К БД: {type(e).__name__}: {e}")
+        
 BTN_RULES = "📖 Правила промпта"
 BTN_ANALYZE = "🔍 Анализ промпта"
 BTN_EDIT = "✏️ Редактирование промпта"
@@ -118,4 +137,5 @@ def handle_other(message):
 
 
 if __name__ == "__main__":
+    check_database()
     bot.infinity_polling()
