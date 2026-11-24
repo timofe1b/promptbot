@@ -93,6 +93,14 @@ def handle_prompt(message):
         return
 
     text = message.text.strip()
+
+    if not any(char.isalnum() for char in text):
+        bot.send_message(
+            message.chat.id,
+            "Похоже, в сообщении нет текста. Пришли полноценный промпт."
+        )
+        return
+        
     if len(text) > MAX_LEN:
         bot.send_message(message.chat.id, f"Промпт длиннее {MAX_LEN} символов, попробуй сократить.")
         return
@@ -110,7 +118,7 @@ def handle_prompt(message):
     bot.edit_message_text(result, message.chat.id, wait.message_id)
 
 
-@bot.message_handler(content_types=["photo", "sticker", "voice", "document", "video"])
+@bot.message_handler(content_types=["photo", "sticker", "animation", "voice", "document", "video"])
 def handle_other(message):
     bot.send_message(message.chat.id, "Я понимаю только текст. Пришли промпт сообщением.")
 
