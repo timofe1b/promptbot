@@ -1,6 +1,5 @@
 import os
 
-import psycopg
 import telebot
 from dotenv import load_dotenv
 from telebot import types
@@ -11,24 +10,6 @@ load_dotenv()
 
 bot = telebot.TeleBot(os.environ["TELEGRAM_TOKEN"])
 
-def check_database():
-    database_url = os.environ.get("DATABASE_URL")
-
-    if not database_url:
-        print("ОШИБКА: переменная DATABASE_URL не найдена.")
-        return
-
-    try:
-        with psycopg.connect(database_url, connect_timeout=10) as conn:
-            with conn.cursor() as cur:
-                cur.execute("SELECT current_database(), current_user")
-                db_name, db_user = cur.fetchone()
-
-        print(f"БАЗА ДАННЫХ ПОДКЛЮЧЕНА: {db_name}, пользователь: {db_user}")
-
-    except Exception as e:
-        print(f"ОШИБКА ПОДКЛЮЧЕНИЯ К БД: {type(e).__name__}: {e}")
-        
 BTN_RULES = "📖 Правила промпта"
 BTN_ANALYZE = "🔍 Анализ промпта"
 BTN_EDIT = "✏️ Редактирование промпта"
@@ -38,11 +19,9 @@ MAX_LEN = 1500  # максимум символов в присланном пр
 # Одно и то же сообщение показывается и в /start, и в /help
 WELCOME_TEXT = (
     "Я помогаю писать запросы к нейросетям.\n\n"
-    f"{BTN_RULES} — из каких шести частей состоит хороший запрос, плюс пример.\n\n"
-    f"{BTN_ANALYZE} — пришли свой запрос: я оценю его по шкале от 0 до 6 "
-    "и подскажу, чего не хватает. Переписывать не буду.\n\n"
-    f"{BTN_EDIT} — пришли запрос: я верну его улучшенную версию, "
-    "которую можно сразу копировать.\n\n"
+    f"{BTN_RULES} — памятка с правилами промпта.\n\n"
+    f"{BTN_ANALYZE} — проанализирую и оценю твой запрос. \n\n"
+    f"{BTN_EDIT} — пришли запрос, и я верну его улучшенную версию. \n\n"
     "Выбери кнопку в меню 👇"
 )
 
@@ -125,7 +104,7 @@ def handle_prompt(message):
         else:
             result = "✏️ Улучшенный промпт:\n\n" + improve_prompt(text)
     except AIError as e:
-        print(f"Ошибка ИИ: {e}", flush=True)
+        print(f"Ошибка ИИ: {e}")
         result = "Не получилось получить ответ от нейросети. Попробуй ещё раз через минуту."
 
     bot.edit_message_text(result, message.chat.id, wait.message_id)
@@ -137,5 +116,4 @@ def handle_other(message):
 
 
 if __name__ == "__main__":
-    check_database()
     bot.infinity_polling()
