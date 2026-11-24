@@ -49,15 +49,21 @@ def _ask(
         temperature=0.2,
         response_mime_type="application/json" if json_mode else None,
     )
-
+    
+    total_start = time.perf_counter()
     for attempt in range(3):
+        attempt_start = time.perf_counter()
         try:
             response = client.models.generate_content(
                 model=MODEL,
                 contents=user,
                 config=config
             )
-
+            print(
+                f"Gemini: попытка {attempt + 1}, "
+                f"время ответа: {time.perf_counter() - attempt_start:.2f} сек.",
+                flush=True
+            )
             if response.text:
                 return response.text.strip()
 
@@ -67,6 +73,10 @@ def _ask(
             raise
 
         except Exception as e:
+            print(
+            f"Gemini: ошибка на попытке {attempt + 1}: {e}",
+            flush=True
+            )
             temporary = "503" in str(e) or "429" in str(e)
 
             if temporary and attempt < 2:
