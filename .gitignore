@@ -1,0 +1,23 @@
+
+# Секретные данные
+.env
+.env.*
+!.env.example
+
+# Виртуальное окружение Python
+venv/
+.venv/
+env/
+
+# Кэш и скомпилированные файлы Python
+__pycache__/
+*.py[cod]
+
+# Файлы IDE
+.idea/
+.vscode/
+
+# Временные файлы
+*.log
+.DS_Store
+Thumbs.db
